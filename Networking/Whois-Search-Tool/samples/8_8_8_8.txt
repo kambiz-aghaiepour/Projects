@@ -1,0 +1,22 @@
+NetRange:       8.8.8.0 - 8.8.8.255
+CIDR:           8.8.8.0/24
+NetName:        GOGL
+NetHandle:      NET-8-8-8-0-1
+Parent:         NET8 (NET-8-0-0-0-0)
+NetType:        Direct Allocation
+OriginAS:       AS15169
+Organization:   Google LLC (GOGL)
+RegDate:        2014-03-14
+Updated:        2023-12-28
+Ref:            https://rdap.arin.net/registry/ip/8.8.8.0
+
+OrgName:        Google LLC
+OrgId:          GOGL
+Address:        1600 Amphitheatre Parkway
+City:           Mountain View
+StateProv:      CA
+PostalCode:     94043
+Country:        US
+RegDate:        2000-03-30
+Updated:        2023-12-28
+OrgAbuseEmail:  network-abuse@google.com

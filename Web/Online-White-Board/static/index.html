@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online White Board</title>
+<style>
+  :root {
+    --bg: #eef1f6;
+    --panel: #ffffff;
+    --ink: #182033;
+    --muted: #67708a;
+    --line: #d9dfea;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 18px; margin: 0; letter-spacing: -0.02em; }
+  header .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; }
+  #status { margin-left: auto; color: var(--muted); font-size: 13px; }
+  main { flex: 1; display: flex; gap: 14px; padding: 14px; min-height: 0; }
+  aside {
+    width: 232px;
+    flex: 0 0 232px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  .group { display: flex; flex-direction: column; gap: 7px; }
+  .group > label, .group > .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  select, input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+  }
+  .row { display: flex; gap: 7px; }
+  .row > * { min-width: 0; }
+  button {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button:hover { border-color: #b8c2d6; background: #f7f9fd; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: #1d4ed8; }
+  button.danger { color: #b91c1c; }
+  button.active { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+  .swatch.active { border-color: #182033; box-shadow: 0 0 0 2px #fff inset; }
+  .colorline { display: flex; align-items: center; gap: 8px; }
+  input[type="color"] {
+    width: 38px; height: 34px; padding: 2px; border: 1px solid var(--line);
+    border-radius: 7px; background: #fff; cursor: pointer;
+  }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.45; margin-top: auto; }
+  .board-wrap {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    aspect-ratio: 5 / 3;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(16, 24, 40, 0.10);
+    touch-action: none;
+    cursor: crosshair;
+  }
+  @media (max-width: 760px) {
+    main { flex-direction: column; }
+    aside { width: auto; flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="dot"></span>
+  <h1>Online White Board</h1>
+  <span id="status">Connecting…</span>
+</header>
+<main>
+  <aside>
+    <div class="group">
+      <label for="boards">Board</label>
+      <select id="boards"></select>
+      <div class="row">
+        <input id="newName" type="text" maxlength="80" aria-label="New board name">
+        <button id="create" class="primary" title="Create board">Add</button>
+      </div>
+      <button id="delete" class="danger">Delete current board</button>
+    </div>
+
+    <div class="group">
+      <span class="label">Colour</span>
+      <div class="swatches" id="swatches"></div>
+      <div class="colorline">
+        <input id="color" type="color" value="#1f2937" aria-label="Custom colour">
+        <span id="colorText" style="font-size:12px;color:var(--muted)">#1F2937</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <label for="size">Brush size — <span id="sizeVal">3</span> px</label>
+      <input id="size" type="range" min="1" max="32" value="3">
+    </div>
+
+    <div class="group">
+      <span class="label">Tool</span>
+      <div class="row">
+        <button id="pen" class="active" style="flex:1">Pen</button>
+        <button id="eraser" style="flex:1">Eraser</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <button id="save">Save as PNG</button>
+      <button id="clear" class="danger">Clear board</button>
+    </div>
+
+    <p class="hint">
+      Draw with mouse, touch or pen. Strokes are stored on the server and other
+      viewers receive them by polling every 1.5&nbsp;s.
+    </p>
+  </aside>
+
+  <div class="board-wrap">
+    <canvas id="canvas" width="1200" height="720"></canvas>
+  </div>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const boardsEl = document.getElementById("boards");
+  const statusEl = document.getElementById("status");
+  const colorEl = document.getElementById("color");
+  const colorText = document.getElementById("colorText");
+  const sizeEl = document.getElementById("size");
+  const sizeVal = document.getElementById("sizeVal");
+  const penBtn = document.getElementById("pen");
+  const eraserBtn = document.getElementById("eraser");
+
+  const PALETTE = ["#1f2937", "#e11d48", "#f97316", "#eab308",
+                   "#16a34a", "#0ea5e9", "#2563eb", "#7c3aed",
+                   "#db2777", "#78716c", "#ffffff", "#000000"];
+  const state = {
+    boardId: null,
+    boards: [],
+    strokes: [],
+    lastSeq: 0,
+    tool: "pen",
+    color: "#1f2937",
+    size: 3,
+    drawing: false,
+    current: null,
+    pollBusy: false,
+  };
+
+  function setStatus(text) { statusEl.textContent = text; }
+
+  function updateBoardLabel() {
+    const option = boardsEl.selectedOptions[0];
+    if (!option) return;
+    const name = option.textContent.replace(/\s*\(\d+\)$/, "");
+    option.textContent = `${name} (${state.strokes.length})`;
+  }
+
+  async function api(path, options = {}) {
+    const response = await fetch(path, {
+      headers: options.body ? { "Content-Type": "application/json" } : {},
+      ...options,
+    });
+    let payload = {};
+    try { payload = await response.json(); } catch (_) { /* empty body */ }
+    if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    return payload;
+  }
+
+  function drawStroke(stroke) {
+    const points = stroke.points || [];
+    if (!points.length) return;
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = stroke.size || 3;
+    ctx.strokeStyle = stroke.tool === "eraser" ? "#ffffff" : (stroke.color || "#1f2937");
+    ctx.fillStyle = ctx.strokeStyle;
+    if (points.length === 1) {
+      ctx.beginPath();
+      ctx.arc(points[0][0], points[0][1], Math.max(1, (stroke.size || 3) / 2), 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i += 1) ctx.lineTo(points[i][0], points[i][1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function redraw() {
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+    state.strokes.forEach(drawStroke);
+    if (state.current) drawStroke(state.current);
+  }
+
+  function setActiveTool(tool) {
+    state.tool = tool;
+    penBtn.classList.toggle("active", tool === "pen");
+    eraserBtn.classList.toggle("active", tool === "eraser");
+    canvas.style.cursor = tool === "eraser" ? "cell" : "crosshair";
+  }
+
+  function updateColor(value) {
+    state.color = value;
+    colorEl.value = value;
+    colorText.textContent = value.toUpperCase();
+    document.querySelectorAll(".swatch").forEach((node) => {
+      node.classList.toggle("active", node.dataset.color.toLowerCase() === value.toLowerCase());
+    });
+    setActiveTool("pen");
+  }
+
+  function buildPalette() {
+    const wrap = document.getElementById("swatches");
+    PALETTE.forEach((color) => {
+      const button = document.createElement("button");
+      button.className = "swatch";
+      button.type = "button";
+      button.dataset.color = color;
+      button.style.background = color;
+      button.title = color;
+      button.addEventListener("click", () => updateColor(color));
+      wrap.appendChild(button);
+    });
+    updateColor(state.color);
+  }
+
+  function canvasPoint(event) {
+    const rect = canvas.getBoundingClientRect();
+    return [
+      Math.round((event.clientX - rect.left) * (canvas.width / rect.width) * 10) / 10,
+      Math.round((event.clientY - rect.top) * (canvas.height / rect.height) * 10) / 10,
+    ];
+  }
+
+  function beginStroke(event) {
+    if (!state.boardId || event.button > 0) return;
+    event.preventDefault();
+    canvas.setPointerCapture(event.pointerId);
+    state.drawing = true;
+    state.current = {
+      tool: state.tool,
+      color: state.color,
+      size: state.size,
+      points: [canvasPoint(event)],
+    };
+    redraw();
+  }
+
+  function extendStroke(event) {
+    if (!state.drawing || !state.current) return;
+    event.preventDefault();
+    const [x, y] = canvasPoint(event);
+    const last = state.current.points[state.current.points.length - 1];
+    if (Math.hypot(x - last[0], y - last[1]) < 1.2) return;
+    state.current.points.push([x, y]);
+    const stroke = state.current;
+    if (stroke.points.length === 2) {
+      // draw the first segment, then append incrementally
+      drawStroke(stroke);
+    } else {
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = stroke.size;
+      ctx.strokeStyle = stroke.tool === "eraser" ? "#ffffff" : stroke.color;
+      const previous = stroke.points[stroke.points.length - 2];
+      const current = stroke.points[stroke.points.length - 1];
+      ctx.beginPath();
+      ctx.moveTo(previous[0], previous[1]);
+      ctx.lineTo(current[0], current[1]);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  async function endStroke(event) {
+    if (!state.drawing || !state.current) return;
+    state.drawing = false;
+    if (event) {
+      try { canvas.releasePointerCapture(event.pointerId); } catch (_) { /* already released */ }
+    }
+    const stroke = state.current;
+    state.current = null;
+    if (!state.boardId || !stroke.points.length) return;
+    try {
+      const result = await api(`/api/boards/${state.boardId}/strokes`, {
+        method: "POST",
+        body: JSON.stringify({ strokes: [stroke] }),
+      });
+      stroke.seq = result.assigned[0];
+      state.strokes.push(stroke);
+      state.lastSeq = Math.max(state.lastSeq, result.last_seq);
+      setStatus(`Saved — ${state.strokes.length} strokes · live`);
+      updateBoardLabel();
+    } catch (error) {
+      setStatus(`Save failed: ${error.message}`);
+    }
+  }
+
+  async function loadBoard(boardId) {
+    if (!boardId) return;
+    try {
+      const payload = await api(`/api/boards/${boardId}`);
+      const board = payload.board;
+      state.boardId = board.id;
+      state.strokes = board.strokes || [];
+      state.lastSeq = board.last_seq || 0;
+      state.current = null;
+      redraw();
+      setStatus(`${state.strokes.length} strokes · synced`);
+      boardsEl.value = board.id;
+      updateBoardLabel();
+      try { localStorage.setItem("whiteboard.boardId", board.id); } catch (_) { /* private mode */ }
+    } catch (error) {
+      setStatus(`Load failed: ${error.message}`);
+    }
+  }
+
+  async function refreshBoards(preferredId = null) {
+    try {
+      const payload = await api("/api/boards");
+      state.boards = payload.boards || [];
+      boardsEl.innerHTML = "";
+      state.boards.forEach((board) => {
+        const option = document.createElement("option");
+        option.value = board.id;
+        option.textContent = `${board.name} (${board.stroke_count})`;
+        boardsEl.appendChild(option);
+      });
+      let target = preferredId || state.boardId;
+      if (!target) {
+        try { target = localStorage.getItem("whiteboard.boardId"); } catch (_) { /* ignore */ }
+      }
+      if (!target || !state.boards.some((b) => b.id === target)) {
+        target = state.boards.length ? state.boards[0].id : null;
+      }
+      if (!target && state.boards.length === 0) {
+        const created = await api("/api/boards", {
+          method: "POST", body: JSON.stringify({ name: "My first board" }),
+        });
+        state.boards = [created.board];
+        boardsEl.innerHTML = "";
+        const option = document.createElement("option");
+        option.value = created.board.id;
+        option.textContent = `${created.board.name} (0)`;
+        boardsEl.appendChild(option);
+        target = created.board.id;
+      }
+      if (target) await loadBoard(target);
+      else setStatus("Create a board to start drawing");
+    } catch (error) {
+      setStatus(`Server unreachable: ${error.message}`);
+    }
+  }
+
+  async function poll() {
+    if (!state.boardId || state.pollBusy) return;
+    state.pollBusy = true;
+    try {
+      const payload = await api(`/api/boards/${state.boardId}/strokes?since=${state.lastSeq}`);
+      if (payload.strokes.length) {
+        state.strokes.push(...payload.strokes);
+        state.lastSeq = payload.last_seq;
+        redraw();
+        setStatus(`${state.strokes.length} strokes · synced`);
+        updateBoardLabel();
+      }
+    } catch (error) {
+      setStatus(`Offline: ${error.message}`);
+    } finally {
+      state.pollBusy = false;
+    }
+  }
+
+  boardsEl.addEventListener("change", () => loadBoard(boardsEl.value));
+  document.getElementById("create").addEventListener("click", async () => {
+    const input = document.getElementById("newName");
+    const name = input.value.trim() || "Untitled board";
+    try {
+      const payload = await api("/api/boards", {
+        method: "POST", body: JSON.stringify({ name }),
+      });
+      input.value = "";
+      await refreshBoards(payload.board.id);
+    } catch (error) { setStatus(`Create failed: ${error.message}`); }
+  });
+  document.getElementById("newName").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") document.getElementById("create").click();
+  });
+  document.getElementById("delete").addEventListener("click", async () => {
+    if (!state.boardId || !confirm("Delete this board and all of its strokes?")) return;
+    try {
+      await api(`/api/boards/${state.boardId}`, { method: "DELETE" });
+      state.boardId = null;
+      state.strokes = [];
+      await refreshBoards();
+    } catch (error) { setStatus(`Delete failed: ${error.message}`); }
+  });
+  document.getElementById("clear").addEventListener("click", async () => {
+    if (!state.boardId || !confirm("Clear every stroke on this board?")) return;
+    try {
+      await api(`/api/boards/${state.boardId}/clear`, { method: "POST", body: "{}" });
+      state.strokes = [];
+      state.lastSeq = 0;
+      state.current = null;
+      redraw();
+      setStatus("Board cleared");
+      refreshBoards(state.boardId);
+    } catch (error) { setStatus(`Clear failed: ${error.message}`); }
+  });
+  document.getElementById("save").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = `whiteboard-${state.boardId || "board"}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+
+  penBtn.addEventListener("click", () => setActiveTool("pen"));
+  eraserBtn.addEventListener("click", () => setActiveTool("eraser"));
+  colorEl.addEventListener("input", () => updateColor(colorEl.value));
+  sizeEl.addEventListener("input", () => {
+    state.size = Number(sizeEl.value);
+    sizeVal.textContent = sizeEl.value;
+  });
+
+  canvas.addEventListener("pointerdown", beginStroke);
+  canvas.addEventListener("pointermove", extendStroke);
+  canvas.addEventListener("pointerup", endStroke);
+  canvas.addEventListener("pointercancel", endStroke);
+  canvas.addEventListener("pointerleave", (event) => {
+    if (state.drawing) endStroke(event);
+  });
+
+  buildPalette();
+  refreshBoards();
+  setInterval(poll, 1500);
+})();
+</script>
+</body>
+</html>

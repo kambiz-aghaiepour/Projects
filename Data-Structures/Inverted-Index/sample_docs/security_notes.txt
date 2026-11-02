@@ -1,0 +1,17 @@
+Classical Ciphers
+
+The Caesar cipher rotates each letter of the alphabet by a fixed number of
+positions. It preserves case and leaves punctuation and digits unchanged.
+Because there are only twenty five possible keys, an attacker can simply
+try every key. Frequency analysis also breaks the cipher: in English the
+letter e is the most common, so the most common ciphertext letter is
+probably an encrypted e.
+
+A substitution cipher keeps the same weakness. Modern encryption uses
+keys that are far too large to brute force, and it hides patterns in the
+plaintext. A search engine that indexes encrypted documents must decrypt
+them first, which is one reason full text search over encrypted data is
+difficult.
+
+Security note: the Caesar cipher provides almost no security and is only
+useful for teaching and puzzles.

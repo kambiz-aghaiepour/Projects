@@ -1,0 +1,20 @@
+Full Text Search and Inverted Indexes
+
+A search engine needs a fast way to find documents that contain a word.
+The inverted index is the data structure that makes this possible. Instead
+of scanning every document for every query, the index maps each term to
+the documents and positions where it appears.
+
+Building the index starts with tokenization: split the text into words,
+normalize case, and record the position of every token. The result is a
+postings list for each term, a mapping from a term to the documents that
+contain it. A query for a single term is then a dictionary lookup.
+
+Multi-term queries combine postings lists with an intersection, so only
+documents that contain every term are returned. Phrase queries go further
+and check that the positions of the terms are consecutive.
+
+Ranking decides which documents appear first. A simple score adds the
+frequency of each query term in a document. More advanced search engines
+weigh rare terms more heavily and use link analysis, but the inverted
+index remains the core of full text search.

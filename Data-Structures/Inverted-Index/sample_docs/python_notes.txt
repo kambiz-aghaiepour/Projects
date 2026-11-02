@@ -1,0 +1,14 @@
+Python Notes
+
+Python dictionaries preserve insertion order and provide fast lookup by
+key. A dictionary is a natural choice for the term dictionary of an
+inverted index. Lists hold the postings for each term.
+
+The collections module offers defaultdict and Counter, both useful when
+building an index. Counter counts term frequencies in one line, while
+defaultdict avoids repeated membership checks.
+
+Text processing starts with str.split or a regular expression. Lowercase
+every token so that Search and search match the same term. Keep the
+original document text so that the user interface can show a snippet
+around each match.

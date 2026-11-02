@@ -1,0 +1,14 @@
+Hash Tables and Search Indexes
+
+A hash table stores key value pairs and supports constant time lookup on
+average. The inverted index uses a hash table internally: the key is a
+term and the value is a postings list of document identifiers.
+
+An index can also be stored in a trie to support prefix queries, or in a
+sorted array to support range queries. Choosing the right data structure
+depends on the query workload. For full text search, the hash table
+backed inverted index is the usual starting point.
+
+Positions matter for phrase queries. Storing a position list per document
+costs more memory than storing a simple term frequency, but it allows the
+search engine to verify that words appear next to each other.

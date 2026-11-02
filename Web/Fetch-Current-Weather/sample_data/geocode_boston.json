@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "id": 4930956,
+      "name": "Boston",
+      "latitude": 42.35843,
+      "longitude": -71.05977,
+      "elevation": 38.0,
+      "feature_code": "PPLA2",
+      "country_code": "US",
+      "timezone": "America/New_York",
+      "population": 653833,
+      "country_id": 6252001,
+      "country": "United States",
+      "admin1": "Massachusetts",
+      "admin2": "Suffolk County"
+    }
+  ],
+  "generationtime_ms": 0.8123
+}

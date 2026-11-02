@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example Tech Notes</title>
+    <link>https://example.com/</link>
+    <description>Sample RSS 2.0 feed bundled for offline demonstrations.</description>
+    <language>en-us</language>
+    <item>
+      <title>Python 3.13 ships an experimental free-threaded build</title>
+      <link>https://example.com/posts/python-313</link>
+      <pubDate>Wed, 01 May 2024 09:30:00 GMT</pubDate>
+      <description>The release adds a no-GIL build, a new interactive REPL, and better error messages.</description>
+    </item>
+    <item>
+      <title>SQLite turns 24 and keeps getting faster</title>
+      <link>https://example.com/posts/sqlite-birthday</link>
+      <pubDate>Mon, 29 Apr 2024 16:05:00 GMT</pubDate>
+      <description>A look at the small database that quietly runs half the world.</description>
+    </item>
+    <item>
+      <title>Why XML still matters for feeds</title>
+      <link>https://example.com/posts/xml-feeds</link>
+      <pubDate>Fri, 26 Apr 2024 07:45:00 GMT</pubDate>
+      <description>RSS and Atom remain the simplest way to publish a list of updates.</description>
+    </item>
+    <item>
+      <title>Weekly links for text tooling</title>
+      <link>https://example.com/posts/text-tooling-links</link>
+      <pubDate>Tue, 23 Apr 2024 12:00:00 GMT</pubDate>
+      <description>Editors, parsers, and regular expressions from around the web.</description>
+    </item>
+  </channel>
+</rss>

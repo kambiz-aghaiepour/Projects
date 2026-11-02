@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Science Journal</title>
+  <link href="https://example.org/" rel="alternate"/>
+  <updated>2024-06-02T10:00:00Z</updated>
+  <id>urn:uuid:2f1c9a5e-0001-4a6b-9c3d-example</id>
+  <author><name>Science Desk</name></author>
+  <entry>
+    <title>A cheaper way to measure ocean salinity</title>
+    <link href="https://example.org/articles/salinity" rel="alternate"/>
+    <published>2024-06-02T09:15:00Z</published>
+    <updated>2024-06-02T10:00:00Z</updated>
+    <summary>A low-cost sensor design that could expand coastal monitoring networks.</summary>
+  </entry>
+  <entry>
+    <title>Bees navigate with a mental map of landmarks</title>
+    <link href="https://example.org/articles/bees" rel="alternate"/>
+    <published>2024-05-30T14:40:00Z</published>
+    <summary>Field experiments suggest honeybees combine vector memory with visual landmarks.</summary>
+  </entry>
+  <entry>
+    <title>The quiet return of analog computing</title>
+    <link href="https://example.org/articles/analog" rel="alternate"/>
+    <published>2024-05-28T08:00:00Z</published>
+    <summary>Researchers are revisiting analog circuits for energy-efficient machine learning.</summary>
+  </entry>
+</feed>
